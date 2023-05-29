@@ -1,14 +1,12 @@
 {
-    "version": 2,
-    "builds": [
-      {
-        // Specify file to convert to a serverless function
-        "src": "index.js",
-        // Specify the NPM module that is used for the build
-        "use": "@now/node"
-      }
-    ],
-    routes": [
+  "version": 2,
+  "builds": [
+    {
+      "src": "index.js",
+      "use": "@now/node"
+    }
+  ],
+  "routes": [
     {
       // Specify which paths will route to a destination using a regex
       "src": "/(.*)",
@@ -16,4 +14,4 @@
       "dest": "index.js"
     }
   ]
-  }
+}
