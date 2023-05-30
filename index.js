@@ -7,16 +7,15 @@ const cors = require('cors');
 const fs = require('fs');
 
 dotenv.config({path:__dirname+'/../.env'})
-// Configure AWS SDK with your credentials
+
 aws.config.update({
   accessKeyId: process.env.AWSAccessKeyId,
   secretAccessKey: process.env.AWSSecretKey,
-  region: process.env.AWSRegion // e.g., 'us-west-1'
+  region: process.env.AWSRegion // us-east-1
 });
 
 const s3 = new aws.S3();
 
-// Create an instance of the express application
 const app = express();
 app.use(cors());
 
@@ -29,26 +28,26 @@ const upload = multer({
       cb(null, { fieldName: file.fieldname });
     },
     key: function (req, file, cb) {
-      cb(null, Date.now().toString()); // Use a unique key for the uploaded file
+      cb(null, Date.now().toString()); // Date.toString() used for key, uid() would be more suitable for app of greater scale. 
     }
   })
 });
 
-// Define a route to handle file uploads
+// Upload API request, receives a video and uses multer to upload to S3 bucket 
 app.post('/upload', upload.single('video'), (req, res) => {
   console.log("upload attempted")
   if (req.file) {
-
     // The file was uploaded successfully
+
     const url = req.file.location;
-    // Handle the URL or perform any other necessary actions (e.g., saving the URL in your database)
-    res.json({ url: url }); // this is just sent back to the frontend after middle has happened.
+    res.json({ url: url }); // url sent back to frontend to inform user of video id
   } else {
     // An error occurred during the upload
     res.status(400).json({ error: 'File upload failed' });
   }
 });
 
+// Download api request
 app.get('/:key', (req, res) => {
   console.log("video requested");
   if (req.params.key){
@@ -59,16 +58,13 @@ app.get('/:key', (req, res) => {
       console.log(data);
       res.attachment(req.params.Key); // Set Filename
       res.type(data.ContentType); // Set FileType
-      res.send(data.Body);        // Send File Buffer
-      //res.sendFile({data.Body});
+      res.send(data.Body);        // Send Video
   });
 } else{
   console.log("no key supplied")
   res.status(400).json({ error: 'No key supplied' });
 }
 });
-
-
 
 // Start the server
 app.listen(3000, () => {
